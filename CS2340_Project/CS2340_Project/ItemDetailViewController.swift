@@ -2,7 +2,7 @@
 //  ItemDetailViewController.swift
 //  CS2340_Project
 //
-//  Created by Seon Gyoo Lee on 7/1/17.
+//  Created by Seon Gyoo Lee on 7/9/17.
 //  Copyright © 2017 slee3056. All rights reserved.
 //
 
@@ -10,23 +10,24 @@ import UIKit
 
 class ItemDetailViewController: UIViewController {
     
-    @IBOutlet weak var itemNameText: UITextField! = UITextField()
-    @IBOutlet weak var lostFoundText: UITextField! = UITextField()
-    @IBOutlet weak var detailsText: UITextView! = UITextView()
-    
-    var itemData: NSDictionary = NSDictionary()
+    var beforeViewController:ItemListViewController!
+    var name: String = ""
+    var isNewName: Bool = false
+
+    @IBOutlet weak var promptLabel: UILabel!
+    @IBOutlet weak var nameTextField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-        itemNameText.isUserInteractionEnabled = false
-        lostFoundText.isUserInteractionEnabled = false
-        detailsText.isUserInteractionEnabled = false
         
-        itemNameText.text = itemData.object(forKey: "itemName") as? String
-        lostFoundText.text = itemData.object(forKey: "lostFound") as? String
-        detailsText.text = itemData.object(forKey: "details") as? String
+        nameTextField.text = name
+        
+        if isNewName {
+            promptLabel.text = "Enter a new name:"
+        } else {
+            promptLabel.text = "Edit name:"
+        }
+        // Do any additional setup after loading the view.
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,7 +35,21 @@ class ItemDetailViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    @IBAction func onDone(_ sender: Any) {
+        if isNewName {
+            beforeViewController.array.append(nameTextField.text!)
+        } else {
+            let i = beforeViewController.array.index(of: name)!
+            beforeViewController.array[i] = nameTextField.text!
+        }
+        beforeViewController.tableView.reloadData()
+        self.navigationController?.popViewController(animated: true)
+    }
 
+    @IBAction func onCancel(_ sender: Any) {
+        self.navigationController?.popViewController(animated: true)
+    }
+    
     /*
     // MARK: - Navigation
 

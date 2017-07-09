@@ -30,9 +30,11 @@ class ViewController: UIViewController {
     }
 
     @IBAction func onLogout(_ sender: AnyObject) {
-        UserDefaults.standard.set(false, forKey:"isUserLoggedIn");
-        UserDefaults.standard.synchronize();
-        self.performSegue(withIdentifier: "segLoginView", sender: self);
+        self.navigationController?.navigationController?.popToRootViewController(animated: true)
+        
+//        UserDefaults.standard.set(false, forKey:"isUserLoggedIn");
+//        UserDefaults.standard.synchronize();
+//        self.performSegue(withIdentifier: "segLoginView", sender: self);
     }
     
 

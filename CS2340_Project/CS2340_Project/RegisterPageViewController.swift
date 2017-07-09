@@ -60,7 +60,12 @@ class RegisterPageViewController: UIViewController {
         }
         
         myAlert.addAction(okAction);
-        self.present(myAlert, animated:true, completion:nil);
+        self.navigationController?.popViewController(animated: true)
+        //self.present(myAlert, animated:true, completion:nil);
+    }
+    
+    @IBAction func onCancel(_ sender: Any) {
+        self.navigationController?.popViewController(animated: true)
     }
     
     func displayAlertMessage(userMessage:String)
