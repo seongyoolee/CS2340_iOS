@@ -10,7 +10,8 @@ import UIKit
 
 class ItemListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
-    var array:[String] = ["Item1", "Item2", "Item3"]
+    var array:[String] = []
+    var array2:[String] = []
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -34,7 +35,7 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
-        cell.textLabel?.text = array[indexPath.row]
+        cell.textLabel?.text = "[" + array2[indexPath.row] + "] " + array[indexPath.row]
         return cell
     }
 
@@ -55,7 +56,9 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
         } else {
             let row = sender as! Int
             let name = array[row]
+            let lostfound = array2[row]
             dest.name = name
+            dest.lostOrFound = lostfound
             dest.isNewName = false
         }
     }

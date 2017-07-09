@@ -12,15 +12,18 @@ class ItemDetailViewController: UIViewController {
     
     var beforeViewController:ItemListViewController!
     var name: String = ""
+    var lostOrFound: String = ""
     var isNewName: Bool = false
 
     @IBOutlet weak var promptLabel: UILabel!
     @IBOutlet weak var nameTextField: UITextField!
+    @IBOutlet weak var lostFoundTextField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         nameTextField.text = name
+        lostFoundTextField.text = lostOrFound
         
         if isNewName {
             promptLabel.text = "Enter a new name:"
@@ -38,9 +41,11 @@ class ItemDetailViewController: UIViewController {
     @IBAction func onDone(_ sender: Any) {
         if isNewName {
             beforeViewController.array.append(nameTextField.text!)
+            beforeViewController.array2.append(lostFoundTextField.text!)
         } else {
             let i = beforeViewController.array.index(of: name)!
             beforeViewController.array[i] = nameTextField.text!
+            beforeViewController.array2[i] = lostFoundTextField.text!
         }
         beforeViewController.tableView.reloadData()
         self.navigationController?.popViewController(animated: true)
