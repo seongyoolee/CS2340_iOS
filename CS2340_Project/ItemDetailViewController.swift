@@ -70,24 +70,14 @@ class ItemDetailViewController: UIViewController, MKMapViewDelegate, UIGestureRe
     
     @IBAction func onDone(_ sender: Any) {
         if isNewName {
-            beforeViewController.beforeViewController.arr.append(nameTextField.text!)
-            beforeViewController.beforeViewController.arr.append(lostFoundTextField.text!)
+            beforeViewController.array.append(nameTextField.text!)
+            beforeViewController.array.append(lostFoundTextField.text!)
         } else {
-            let i = beforeViewController.beforeViewController.arr.index(of: name)!
-            beforeViewController.beforeViewController.arr[i] = nameTextField.text!
-            beforeViewController.beforeViewController.arr2[i] = lostFoundTextField.text!
+            let i = beforeViewController.array.index(of: name)!
+            beforeViewController.array[i] = nameTextField.text!
+            beforeViewController.array2[i] = lostFoundTextField.text!
         }
         
-//        if isNewName {
-//            beforeViewController.array.append(nameTextField.text!)
-//            beforeViewController.array2.append(lostFoundTextField.text!)
-//        } else {
-//            let i = beforeViewController.array.index(of: name)!
-//            beforeViewController.array[i] = nameTextField.text!
-//            beforeViewController.array2[i] = lostFoundTextField.text!
-//        }
-        
-//        beforeViewController.dict.updateValue(lostFoundTextField.text!, forKey: nameTextField.text!)
         beforeViewController.tableView.reloadData()
         self.navigationController?.popViewController(animated: true)
     }

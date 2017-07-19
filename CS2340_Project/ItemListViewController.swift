@@ -10,14 +10,10 @@ import UIKit
 
 class ItemListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
     
-//    var array:[String] = []
-//    var array2:[String] = []
-    var filteredData = [String]()
-    var isSearching: Bool = false
-    
-    var beforeViewController:ViewController!
-    
-    //var dict: [String: String] = [:]
+    var array:[String] = []
+    var array2:[String] = []
+    var filteredData:[String] = []
+    var isSearching:Bool = false
     
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
@@ -41,9 +37,7 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
         if isSearching {
             return filteredData.count
         }
-        //return dict.count
-        return beforeViewController.arr.count
-        //return array.count
+        return array.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -53,9 +47,7 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
         if isSearching {
             cell.textLabel?.text = filteredData[indexPath.row]
         } else {
-//            cell.textLabel?.text = "[" + array2[indexPath.row] + "] " + array[indexPath.row]
-            cell.textLabel?.text = "[" + beforeViewController.arr2[indexPath.row] + "] " + beforeViewController.arr[indexPath.row]
-
+            cell.textLabel?.text = "[" + array2[indexPath.row] + "] " + array[indexPath.row]
         }
         
         return cell
@@ -68,7 +60,7 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
             tableView.reloadData()
         } else {
             isSearching = true
-            filteredData = beforeViewController.arr.filter({$0 == searchBar.text})
+            filteredData = array.filter({$0 == searchBar.text})
             tableView.reloadData()
         }
     }
@@ -89,8 +81,8 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
             dest.isNewName = true
         } else {
             let row = sender as! Int
-            let name = beforeViewController.arr[row]
-            let lostfound = beforeViewController.arr2[row]
+            let name = array[row]
+            let lostfound = array2[row]
             dest.name = name
             dest.lostOrFound = lostfound
             dest.isNewName = false
