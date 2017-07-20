@@ -30,7 +30,7 @@ class ViewController: UIViewController {
     }
 
     @IBAction func onLogout(_ sender: AnyObject) {
-        self.navigationController?.navigationController?.popToRootViewController(animated: true)
+        self.navigationController?.popToRootViewController(animated: true)
     }
     
 

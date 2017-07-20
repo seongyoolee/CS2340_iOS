@@ -14,9 +14,8 @@ import MapKit
 class ItemDetailViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDelegate {
     
     var beforeViewController:ItemListViewController!
-    var name: String = ""
-    var lostOrFound: String = ""
-    var isNewName: Bool = false
+    var pin:Pin?
+    var isNewName:Bool = false
 
     @IBOutlet weak var promptLabel: UILabel!
     @IBOutlet weak var nameTextField: UITextField!
@@ -26,8 +25,8 @@ class ItemDetailViewController: UIViewController, MKMapViewDelegate, UIGestureRe
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        nameTextField.text = name
-        lostFoundTextField.text = lostOrFound
+        nameTextField.text = pin?.pinName
+        lostFoundTextField.text = pin?.lostOrFound
         
         if isNewName {
             promptLabel.text = "Enter a new name:"
@@ -40,6 +39,10 @@ class ItemDetailViewController: UIViewController, MKMapViewDelegate, UIGestureRe
         recognizer.delaysTouchesBegan = true
         recognizer.delegate = self
         mapView.addGestureRecognizer(recognizer)
+        
+        if let pin = pin {
+            self.centerMapViewOn(pin: pin)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -69,23 +72,37 @@ class ItemDetailViewController: UIViewController, MKMapViewDelegate, UIGestureRe
     }
     
     @IBAction func onDone(_ sender: Any) {
-        if isNewName {
-            beforeViewController.array.append(nameTextField.text!)
-            beforeViewController.array.append(lostFoundTextField.text!)
-        } else {
-            let i = beforeViewController.array.index(of: name)!
-            beforeViewController.array[i] = nameTextField.text!
-            beforeViewController.array2[i] = lostFoundTextField.text!
+        if isNewName && pin == nil {
+            let myAlert = UIAlertController(title:"Alert", message:"You have not placed a pin yet", preferredStyle: UIAlertControllerStyle.alert);
+            let okAction = UIAlertAction(title:"Ok", style:UIAlertActionStyle.default){ action in
+                self.dismiss(animated: true, completion:nil);
+            }
+            myAlert.addAction(okAction);
+            self.present(myAlert, animated:true, completion:nil);
         }
-        
-        beforeViewController.tableView.reloadData()
-        self.navigationController?.popViewController(animated: true)
+        else if pin != nil {
+            pin?.pinName = nameTextField.text
+            pin?.lostOrFound = lostFoundTextField.text
+            
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+                return
+            }
+            let managedContext = appDelegate.persistentContainer.viewContext
+
+            do {
+                try managedContext.save()
+            } catch let error as NSError {
+                print("Could not save: \(error.localizedDescription)")
+            }
+            beforeViewController.loadPins()
+            beforeViewController.tableView.reloadData()
+            self.navigationController?.popViewController(animated: true)
+        }
     }
 
     @IBAction func onCancel(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)
     }
-    
     
     // MARK: - MKMapViewDelegate
     
@@ -110,7 +127,7 @@ class ItemDetailViewController: UIViewController, MKMapViewDelegate, UIGestureRe
         
         let pin = view.annotation as! Pin
         let placeName = pin.pinName
-        let placeInfo = pin.pinDescription
+        let placeInfo = pin.lostOrFound
         
         let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "Ok", style: .default))
@@ -121,62 +138,38 @@ class ItemDetailViewController: UIViewController, MKMapViewDelegate, UIGestureRe
     // MARK: - Helper
     
     func handleLongPress(gestureReconizer: UILongPressGestureRecognizer) {
+
         if gestureReconizer.state != UIGestureRecognizerState.ended {
             return
+        }
+
+        if self.pin != nil {
+            mapView.removeAnnotation(pin!)
+        } else {
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+                return
+            }
+            let managedContext = appDelegate.persistentContainer.viewContext
+            self.pin = Pin(context: managedContext)
         }
         
         let location = gestureReconizer.location(in: mapView)
         let coordinate = mapView.convert(location, toCoordinateFrom: mapView)
         
-        let alert = UIAlertController(title: "Add a New Pin", message: nil, preferredStyle: .alert)
+
+        pin?.pinLat = coordinate.latitude
+        pin?.pinLong = coordinate.longitude
         
-        alert.addTextField { textField in
-            textField.placeholder = "Pin Name"
-        }
-        
-        alert.addTextField { textField in
-            textField.placeholder = "Pin Description"
-        }
-        
-        let saveAction = UIAlertAction(title: "Save", style: .default) { action in
-            let nameTextField = alert.textFields![0]
-            let descriptionTextField = alert.textFields![1]
-            let name = nameTextField.text ?? "Pin Name"
-            let description = descriptionTextField.text ?? "Pin Description"
-            
-            if let pin = self.savePin(name: name, description: description, location: coordinate) {
-                self.mapView.addAnnotation(pin)
-            }
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-        
-        alert.addAction(saveAction)
-        alert.addAction(cancelAction)
-        present(alert, animated: true, completion: nil)
+        mapView.addAnnotation(pin!)
+        centerMapViewOn(pin: pin!)
     }
     
-    func savePin(name: String, description: String, location: CLLocationCoordinate2D) -> Pin? {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            return nil
-        }
-        
-        let managedContext = appDelegate.persistentContainer.viewContext
-        
-        let pin = Pin(context: managedContext)
-        pin.pinName = name
-        pin.pinDescription = description
-        pin.pinLat = location.latitude
-        pin.pinLong = location.longitude
-        
-        do {
-            try managedContext.save()
-            return pin
-        } catch let error as NSError {
-            print("Could not save: \(error.localizedDescription)")
-            return nil
-        }
+    func centerMapViewOn(pin:Pin) {
+        let center = CLLocationCoordinate2D(latitude: pin.pinLat, longitude: pin.pinLong)
+        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50))
+        mapView.setRegion(region, animated: true)
     }
+
 
     
     /*

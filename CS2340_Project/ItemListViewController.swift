@@ -7,12 +7,13 @@
 //
 
 import UIKit
+import CoreData
 
 class ItemListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
     
-    var array:[String] = []
-    var array2:[String] = []
-    var filteredData:[String] = []
+    var pins:[Pin] = []
+    
+    var filteredData:[Pin] = []
     var isSearching:Bool = false
     
     @IBOutlet weak var tableView: UITableView!
@@ -26,6 +27,24 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
         tableView.dataSource = self
         searchBar.delegate = self
         searchBar.returnKeyType = UIReturnKeyType.done
+        
+        loadPins()
+    }
+    
+    func loadPins() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            return
+        }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
+        
+        do {
+            self.pins = try managedContext.fetch(fetchRequest)
+            
+        } catch let error as NSError {
+            print("Could not fetch. \(error), \(error.userInfo)")
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -37,18 +56,18 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
         if isSearching {
             return filteredData.count
         }
-        return array.count
+        return pins.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        var pin = pins[indexPath.row]
         
         if isSearching {
-            cell.textLabel?.text = filteredData[indexPath.row]
-        } else {
-            cell.textLabel?.text = "[" + array2[indexPath.row] + "] " + array[indexPath.row]
+            pin = filteredData[indexPath.row]
         }
+        cell.textLabel?.text = "[\(pin.lostOrFound ?? "")] \(pin.pinName ?? "")"
         
         return cell
     }
@@ -60,7 +79,7 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
             tableView.reloadData()
         } else {
             isSearching = true
-            filteredData = array.filter({$0 == searchBar.text})
+            filteredData = pins.filter({$0.pinName == searchBar.text})
             tableView.reloadData()
         }
     }
@@ -81,10 +100,9 @@ class ItemListViewController: UIViewController, UITableViewDataSource, UITableVi
             dest.isNewName = true
         } else {
             let row = sender as! Int
-            let name = array[row]
-            let lostfound = array2[row]
-            dest.name = name
-            dest.lostOrFound = lostfound
+            let pin = pins[row]
+
+            dest.pin = pin
             dest.isNewName = false
         }
     }
